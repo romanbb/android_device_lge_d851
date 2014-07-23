@@ -39,7 +39,7 @@ BOARD_MKBOOTIMG_ARGS := --kernel_offset 0x0008000 --ramdisk_offset 0x2000000 --s
 TARGET_PREBUILT_KERNEL := device/lge/d851/kernel
 # else uncomment below to build from sauce
 # TARGET_KERNEL_SOURCE := kernel/lge/d851
-# TARGET_KERNEL_CONFIG := g3-tmo_us-perf_defconfig
+# TARGET_KERNEL_CONFIG := cyanogen_d851_defconfig
 # apparently this dont work but should ;x
 # TARGET_KERNEL_APPEND_DTB := true
 # use this instead
