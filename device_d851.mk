@@ -8,6 +8,14 @@ $(call inherit-product-if-exists, vendor/lge/d851/d851-vendor.mk)
 DEVICE_PACKAGE_OVERLAYS += device/lge/d851/overlay
 
 LOCAL_PATH := device/lge/d851
+ifeq ($(TARGET_PREBUILT_KERNEL),)
+	LOCAL_KERNEL := $(LOCAL_PATH)/kernel
+else
+	LOCAL_KERNEL := $(TARGET_PREBUILT_KERNEL)
+endif
+
+PRODUCT_COPY_FILES += \
+    $(LOCAL_KERNEL):kernel
 
 $(call inherit-product, build/target/product/full.mk)
 
