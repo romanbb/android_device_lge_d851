@@ -19,3 +19,52 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/rootdir/init.g3.rc:init.g3.rc \
     $(LOCAL_PATH)/rootdir/ueventd.g3.rc:ueventd.g3.rc \
     $(LOCAL_PATH)/rootdir/fstab.g3:fstab.g3
+
+
+# Filesystem management tools
+PRODUCT_PACKAGES += \
+    make_ext4fs \
+    e2fsck \
+    setup_fs
+
+PRODUCT_PACKAGES += \
+    libxml2
+#    libbson \
+#    libcurl \
+
+# Misc dependency packages
+PRODUCT_PACKAGES += \
+    ebtables \
+    ethertypes \
+    curl \
+    libnl_2 \
+    libbson
+
+# Graphics
+PRODUCT_PACKAGES += \
+    copybit.msm8974 \
+    gralloc.msm8974 \
+    hwcomposer.msm8974 \
+    memtrack.msm8974 \
+    liboverlay
+
+
+# Lights
+PRODUCT_PACKAGES += \
+    lights.msm8974
+
+
+# Power
+PRODUCT_PACKAGES += \
+    power.msm8974
+
+
+# Device uses high-density artwork where available
+PRODUCT_AAPT_CONFIG := normal hdpi xhdpi xxhdpi
+PRODUCT_AAPT_PREF_CONFIG := xxhdpi
+
+# call dalvik heap config
+$(call inherit-product-if-exists, frameworks/native/build/phone-xxhdpi-2048-dalvik-heap.mk)
+
+# call hwui memory config
+$(call inherit-product-if-exists, frameworks/native/build/phone-xxhdpi-2048-hwui-memory.mk)
