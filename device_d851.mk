@@ -14,3 +14,8 @@ $(call inherit-product, build/target/product/full.mk)
 PRODUCT_BUILD_PROP_OVERRIDES += BUILD_UTC_DATE=0
 PRODUCT_NAME := full_d851
 PRODUCT_DEVICE := d851
+
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/rootdir/init.g3.rc:init.g3.rc \
+    $(LOCAL_PATH)/rootdir/ueventd.g3.rc:ueventd.g3.rc \
+    $(LOCAL_PATH)/rootdir/fstab.g3:fstab.g3

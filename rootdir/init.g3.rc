@@ -1,0 +1,219 @@
+# Copyright (c) 2009-2012, Code Aurora Forum. All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#     * Redistributions of source code must retain the above copyright
+#       notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above copyright
+#       notice, this list of conditions and the following disclaimer in the
+#       documentation and/or other materials provided with the distribution.
+#     * Neither the name of Code Aurora nor
+#       the names of its contributors may be used to endorse or promote
+#       products derived from this software without specific prior written
+#       permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NON-INFRINGEMENT ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+# CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+# EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+import /init.galbi.rc
+import /init.g3_product.rc
+import /init.lge.svelte.rc
+
+on fs
+    mount_all fstab.g3
+
+    # LGE_UPDATE_START
+    # Executing tune2fs to reserve some region in /data. (40MB)
+    # 2013-02-05 G2-FS@lge.com
+    exec /system/bin/tune2fs -u system -r 10240 /dev/block/platform/msm_sdcc.1/by-name/userdata
+    # LGE_UPDATE_END
+
+    # LGE_UPDATE_START, 2013/02/05, G2-FS@lge.com
+    # create mount point for LG Specific functions
+    mkdir /sns 0755 system system
+    mkdir /persist-lg 0755 system system
+    mkdir /mpt 0755 system system
+
+    wait /dev/block/platform/msm_sdcc.1/by-name/sns
+    exec /system/bin/e2fsck -y /dev/block/platform/msm_sdcc.1/by-name/sns
+    mount ext4 /dev/block/platform/msm_sdcc.1/by-name/sns /sns nosuid nodev barrier=1 noatime noauto_da_alloc errors=continue
+
+    wait /dev/block/platform/msm_sdcc.1/by-name/drm
+    exec /system/bin/e2fsck -y /dev/block/platform/msm_sdcc.1/by-name/drm
+    mount ext4 /dev/block/platform/msm_sdcc.1/by-name/drm /persist-lg nosuid nodev barrier=1 noatime noauto_da_alloc errors=continue
+
+    wait /dev/block/platform/msm_sdcc.1/by-name/mpt
+    exec /system/bin/e2fsck -y /dev/block/platform/msm_sdcc.1/by-name/mpt
+    mount ext4 /dev/block/platform/msm_sdcc.1/by-name/mpt /mpt nodev nosuid barrier=1 noatime noauto_da_alloc errors=continue
+    # LGE_UPDATE_END
+
+# LGE_CHANGE_S, [NFC][seunghoon65.lee@lge.com] 2013.12.18 Create NV Storage for NFC
+    mkdir /data/nfc 770 nfc nfc
+    mkdir /data/nfc/param 770 nfc nfc
+# LGE_CHANGE_E, [NFC][seunghoon65.lee@lge.com] 2013.12.18 Crate NV Storage for NFC
+
+# [BEGIN][LGE_WIFI][QCT][neo-wifi@lge.com] add riva_ramdump service
+    chmod 0660 /dev/ramdump_pronto
+    chown system system /dev/ramdump_pronto
+# [END][LGE_WIFI][QCT][neo-wifi@lge.com] add riva_ramdump service
+
+#[BEGIN][B2-BSP-LCD@lge.com] add rt mode
+	chmod 0660 /sys/bus/i2c/devices/0-0036/lm3697_rt_mode
+	chown system system /sys/bus/i2c/devices/0-0036/lm3697_rt_mode
+#	chmod 0660 /sys/devices/fd922800.qcom,mdss_dsi/ief_on_off
+#	chown system system /sys/devices/fd922800.qcom,mdss_dsi/ief_on_off
+#[END][B2-BSP-LCD@lge.com] add rt mode
+
+# 2012.08.24 real-wifi@lge.com[wo0gi] TestMode Daemon for broadcom driver [START]
+service diagd /system/bin/diagd 
+	class late_start
+	user root
+	group radio system
+	disabled
+	oneshot
+	socket lsock_diagd stream 666
+
+on property:wifi_ftm.diagd_start=1
+    start diagd
+
+on property:wifi_ftm.diagd_start=0
+    stop diagd
+# 2012.08.24 real-wifi@lge.com[wo0gi] TestMode Daemon for broadcom driver [END]
+
+# [BEGIN][LGE_WIFI][QCT][neo-wifi@lge.com] set SSR3 and rivadump enable depends on buildtype
+#on property:ro.build.type=user
+#    setprop persist.sys.ssr.restart_level_w 3
+#
+#on property:ro.build.type=userdebug
+#    setprop persist.sys.ssr.restart_level_w 3
+#    setprop persist.service.rivadump.enable 1
+# [END][LGE_WIFI][QCT][neo-wifi@lge.com] set SSR3 and rivadump enable depends on buildtype
+
+# [BEGIN][LGE_WIFI][QCT][neo-wifi@lge.com] add riva_ramdump service
+on property:persist.sys.ssr.restart_level_w=*
+     start wifi_ssr_setting
+#    exec /system/bin/sh /system/etc/init.zetaw.ssr.wifi.sh ${persist.sys.ssr.restart_level_w}
+
+service wifi_ssr_setting /system/bin/sh /system/etc/init.g3.ssr.wifi.sh
+    class late_start
+    user root
+    group system
+    disabled
+    oneshot
+
+on property:persist.service.rivadump.enable=1
+    write /sys/module/pil_pronto/parameters/enable_pronto_ramdump 1
+    start riva_ramdump
+
+on property:persist.service.rivadump.enable=0
+    write /sys/module/pil_pronto/parameters/enable_pronto_ramdump 0
+    stop riva_ramdump
+
+service riva_ramdump /system/bin/riva_ramdump
+    class late_start
+    user root
+    group system
+    disabled
+# [END][LGE_WIFI][QCT][neo-wifi@lge.com] add riva_ramdump service
+
+#[START][LGE_WIFI][CT][hayun.kim@lge.com] : [SPEC] PPPOE Feature
+service pppoe_extd /system/bin/pppoe_extd
+    user root
+    group system radio
+    disabled
+    oneshot
+
+service dhcp6cDNS_wlan0 /system/bin/dhcp6c -c "/etc/wide-dhcpv6/dhcp6cDNS.conf" -Df wlan0
+	disabled
+	oneshot
+
+service dhcp6c_wlan0 /system/bin/dhcp6c -c "/etc/wide-dhcpv6/dhcp6c.conf" -Df wlan0
+    disabled
+    oneshot
+#[END][LGE_WIFI][CT][hayun.kim@lge.com] : [SPEC] PPPOE Feature
+
+#LGE_CHANGE_S[START]2012.7.16 jaeho.cho@lge.com add usbdebug manager
+service usbdebug-manager /system/bin/usbdebug-manager
+    class late_start
+    user root
+    disabled
+    oneshot
+
+on usb_debug
+    start usbdebug-manager
+#LGE_CHANGE_E[END]2012.7.16 jaeho.cho@lge.com add usbdebug manager
+
+on property:persist.service.usb_ther=true
+on property:persist.service.usb_ther=false
+
+# Factory, MTSD lg-msp@lge.com
+service mtsd /system/bin/mtsd
+    class late_start
+    oneshot
+    socket mtsd.port stream 660 system system
+
+on property:sys.mts.forcemts=1
+    start mtsd
+on property:sys.mts.forcemts=0
+    stop mtsd
+
+#touch firmware upgrade on hiddenmenu
+on property:sys.lge.touchfirmware.update=1
+    write /sys/devices/virtual/input/lge_touch/firmware 1
+    setprop sys.lge.touchfirmware.update 2
+
+# bugreport is triggered by holding down volume down, volume up and power
+service bugreport /system/bin/bugmailer.sh -v
+    class main
+    disabled
+    oneshot
+
+# Begin Immersion changes(donguk.ki@lge.com)
+service immvibed /system/bin/immvibed
+    class main
+    user shell
+    group shell system
+    oneshot
+# End Immersion changes
+
+# LGBACKUP SystemService Daemon
+service bnrd /system/bin/bnrd
+      class main
+      socket bnrd stream 660 root system
+      user root
+      group system radio sdcard_rw
+#GOTA_UA
+#// LGE_UPDATE_S DMS_SYSTEM_GOTA dms-fota@lge.com 2012/11/09
+service recovery_write /sbin/write_recovery
+    class main
+    oneshot
+#// LGE_UPDATE_S DMS_SYSTEM_GOTA dms-fota@lge.com 2012/11/09
+#Customize booting resources
+service runtime_boot_res /system/vendor/bin/runtime_boot_res.sh
+    disabled
+    oneshot
+
+on property:ro.build.sbp=1
+    start runtime_boot_res
+
+# LGE Data, DSQN service juhwan.park@lge.com
+service dsqn /system/bin/dsqn
+    disabled
+    user root
+
+on property:persist.service.dsqn=1
+    start dsqn
+
+on property:persist.service.dsqn=0
+    stop dsqn
+
