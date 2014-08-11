@@ -16,9 +16,9 @@ PRODUCT_NAME := full_d851
 PRODUCT_DEVICE := d851
 
 PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/rootdir/init.g3.rc:init.g3.rc \
-    $(LOCAL_PATH)/rootdir/ueventd.g3.rc:ueventd.g3.rc \
-    $(LOCAL_PATH)/rootdir/fstab.g3:fstab.g3
+    $(LOCAL_PATH)/rootdir/init.g3.rc:root/init.g3.rc \
+    $(LOCAL_PATH)/rootdir/ueventd.g3.rc:root/ueventd.g3.rc \
+    $(LOCAL_PATH)/rootdir/fstab.g3:root/fstab.g3
 
 
 # Filesystem management tools

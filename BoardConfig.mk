@@ -1,4 +1,4 @@
-USE_CAMERA_STUB := true
+    USE_CAMERA_STUB := true
 
 # inherit from the proprietary version
 -include vendor/lge/d851/BoardConfigVendor.mk
@@ -68,6 +68,8 @@ TARGET_KERNEL_CONFIG := cyanogen_d851_defconfig
 # TARGET_KERNEL_APPEND_DTB := true
 # use this instead
 BOARD_KERNEL_IMAGE_NAME := zImage-dtb
+
+TARGET_RECOVERY_FSTAB := device/lge/d851/rootdir/fstab.g3
 
 BOARD_BOOTIMAGE_PARTITION_SIZE := 14485760
 BOARD_RECOVERYIMAGE_PARTITION_SIZE := 16485760

@@ -25,18 +25,12 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-import /init.galbi.rc
-import /init.g3_product.rc
-import /init.lge.svelte.rc
+#import /init.galbi.rc
+#import /init.g3_product.rc
+#import /init.lge.svelte.rc
 
 on fs
-    mount_all fstab.g3
-
-    # LGE_UPDATE_START
-    # Executing tune2fs to reserve some region in /data. (40MB)
-    # 2013-02-05 G2-FS@lge.com
-    exec /system/bin/tune2fs -u system -r 10240 /dev/block/platform/msm_sdcc.1/by-name/userdata
-    # LGE_UPDATE_END
+    mount_all ./fstab.g3
 
     # LGE_UPDATE_START, 2013/02/05, G2-FS@lge.com
     # create mount point for LG Specific functions
