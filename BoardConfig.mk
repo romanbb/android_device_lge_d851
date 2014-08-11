@@ -35,8 +35,11 @@ TARGET_QCOM_DISPLAY_VARIANT := caf-new
 TARGET_QCOM_MEDIA_VARIANT := caf-new
 TARGET_DISPLAY_USE_RETIRE_FENCE := true
 
+# Flags
+COMMON_GLOBAL_CFLAGS += -DQCOM_HARDWARE -DQCOM_BSP
+
 # not sure why just these cmds dont work
-BOARD_KERNEL_CMDLINE := console=ttyHSL0,115200,n8 androidboot.hardware=g3 user_debug=31 msm_rtb.filter=0x0
+BOARD_KERNEL_CMDLINE := console=ttyHSL0,115200,n8 androidboot.hardware=g3 user_debug=31 msm_rtb.filter=0x0 androidboot.selinux=permissive
 
 # kernel cmdline for fastboot booting the image in testing
 #BOARD_KERNEL_CMDLINE := console=ttyHSL0,115200,n8 androidboot.hardware=g3 user_debug=31 msm_rtb.filter=0x0 LGD851 mdss_mdp.panel=1:dsi:0:qcom,mdss_dsi_lgit_sic_mipi0_video:1:qcom,mdss_dsi_lgit_sic_mipi1_video uart_console lge.rev=rev_10 lge.bootreason=0x0 lge.hreset=off gpt lge.kcal batt.soc=50 maxcpus=4 kswitch vmalloc=600m
